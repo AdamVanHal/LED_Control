@@ -7,14 +7,18 @@ int mtime = 03;
 long stime = 00;
 unsigned int loopStart = 0;
 unsigned int elapsedTime = 0;
+String inputString = "";
+bool stringComplete = false;
 
 void setup() {
   //init serial
   Serial.begin(9600);
+  inputString.reserve(200);
   //pin 0-12 output
   for(int i=0;i<=12;i++){
     pinMode(i, OUTPUT);
   }
+  delay(5000);
   //pin 24-27 output
   for(int i=24;i<=27;i++){
     pinMode(i, OUTPUT);
@@ -32,6 +36,7 @@ void setup() {
     delay(500);
     digitalWrite(i, LOW);
   }
+  Serial.println("initiated");
 }
 
 void loop() {
@@ -43,6 +48,8 @@ void loop() {
     //dramatically more than 1 second if serial handling delayed us
     elapsedTime = millis()-loopStart;
     loopStart = millis();
+
+    //Serial.println("Delay met");
     
     stime =+ elapsedTime/1000.0;
     if(stime>59){
@@ -57,6 +64,7 @@ void loop() {
       }
     }
     //delay(999);
+    //Serial.println("Offset added");
     
     int TempTime = htime;
     for(int i = 4; i>=0; i--){
@@ -67,6 +75,7 @@ void loop() {
         digitalWrite(hourPins[i], LOW);
       }
     }
+    //Serial.println("Hours Displayed");
   
     TempTime = mtime;
     for(int i = 5; i>=0; i--){
@@ -77,8 +86,9 @@ void loop() {
         digitalWrite(minutePins[i], LOW);
       }
     }
+    //Serial.println("Minutes displayed");
   
-    TempTime = stime;//remember stime (seconds) is fractional to prevent drift over time
+    TempTime = (int) stime;//remember stime (seconds) is fractional to prevent drift over time
     for(int i = 5; i>=0; i--){
       if((pow(2,i))<=TempTime){
         TempTime=TempTime-(pow(2,i));
@@ -87,6 +97,7 @@ void loop() {
         digitalWrite(secondPins[i], LOW);
       }
     }//end seconds display loop
+    //Serial.println("Seconds Displayed");
   }//end time elapsed if statement
 }//end loop
 
@@ -99,12 +110,22 @@ void serialEvent() {
   while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
-    // add it to the inputString:
-    inputString += inChar;
+    if ((inChar == '\r') || (inChar == '\n')) {
+      //do not add these special chars to input string
+    }else{
+      // add it to the inputString:
+      inputString += inChar;
+    }
     // if the incoming character is a newline, set a flag so the main loop can
     // do something about it:
-    if (inChar == '\n') {
+    if ((inChar == '\r') || (inChar == '\n')) {//some terminals send carriage return, others send newline when enter is pressed 
       stringComplete = true;
+      if(inputString=="get_time"){
+        Serial.println();
+        Serial.println("Time");
+      }
+      inputString = "";
+      stringComplete = false;
     }
   }
 }
