@@ -4,7 +4,7 @@ int minutePins[6] = {5,6,7,8,9,10};
 int secondPins[6] = {11,12,24,25,26,27};
 int htime = 17;
 int mtime = 03;
-long stime = 00;
+double stime = 05;
 unsigned int loopStart = 0;
 unsigned int elapsedTime = 0;
 String inputString = "";
@@ -49,12 +49,16 @@ void loop() {
     elapsedTime = millis()-loopStart;
     loopStart = millis();
 
-    //Serial.println("Delay met");
-    
-    stime =+ elapsedTime/1000.0;
+    Serial.println(elapsedTime);
+    Serial.println(loopStart);
+    Serial.println(stime);
+    Serial.println(mtime);
+    Serial.println(htime);
+    Serial.println();
+    stime += elapsedTime/1000.0;
     if(stime>59){
-      mtime += stime/60;
-      stime= stime - (stime/60);
+      mtime += (int)stime/60;
+      stime= stime - ((int)(stime/60.0))*60; //remove full minutes that have passed
       if(mtime>59){
         mtime= mtime-60; //i dont think I need to handle jumps of more than a few min
         htime++;
@@ -63,6 +67,10 @@ void loop() {
         }
       }
     }
+    Serial.println(stime);
+    Serial.println(mtime);
+    Serial.println(htime);
+    Serial.println();
     //delay(999);
     //Serial.println("Offset added");
     
